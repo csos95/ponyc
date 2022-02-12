@@ -428,6 +428,7 @@ ast_result_t pass_names_pre(ast_t** astp, pass_opt_t* options)
 
   return AST_OK;
 }
+
 ast_result_t pass_names(ast_t** astp, pass_opt_t* options)
 {
   (void)options;
