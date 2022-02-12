@@ -55,6 +55,7 @@ const char* pass_name(pass_id pass)
     case PASS_SCOPE: return "scope";
     case PASS_IMPORT: return "import";
     case PASS_NAME_RESOLUTION: return "name";
+    case PASS_NAME_RESOLUTION_2: return "freecandy";
     case PASS_FLATTEN: return "flatten";
     case PASS_TRAITS: return "traits";
     case PASS_DOCS: return "docs";
@@ -235,11 +236,18 @@ static bool ast_passes(ast_t** astp, pass_opt_t* options, pass_id last)
     plugin_visit_ast(*astp, options, PASS_IMPORT);
 
   if(!visit_pass(astp, options, last, &r, PASS_NAME_RESOLUTION, NULL,
-    pass_names))
+    pass_names_pre))
     return r;
 
   if(is_program)
     plugin_visit_ast(*astp, options, PASS_NAME_RESOLUTION);
+
+  if(!visit_pass(astp, options, last, &r, PASS_NAME_RESOLUTION_2, NULL,
+    pass_names))
+    return r;
+
+  if(is_program)
+    plugin_visit_ast(*astp, options, PASS_NAME_RESOLUTION_2);
 
   if(!visit_pass(astp, options, last, &r, PASS_FLATTEN, NULL, pass_flatten))
     return r;

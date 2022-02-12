@@ -13,6 +13,8 @@ bool names_nominal(pass_opt_t* opt, ast_t* scope, ast_t** astp, bool expr);
 
 ast_result_t pass_names(ast_t** astp, pass_opt_t* options);
 
+ast_result_t pass_names_pre(ast_t** astp, pass_opt_t* options);
+
 PONY_EXTERN_C_END
 
 #endif

@@ -365,7 +365,54 @@ bool names_nominal(pass_opt_t* opt, ast_t* scope, ast_t** astp, bool expr)
   return r;
 }
 
-ast_result_t pass_names(ast_t** astp, pass_opt_t* options)
+bool names_reference(ast_t** astp)
+{
+  ast_t* ast = *astp;
+  const char* name = ast_name(ast_child(ast));
+
+  if (!is_name_type(name))
+    return true;
+
+  // Everything we reference must be in scope, so we can use ast_get for lookup.
+  sym_status_t status;
+  ast_t* def = ast_get(ast, ast_name(ast_child(ast)), &status);
+
+  // If nothing was found, we fail, but also try to suggest an alternate name.
+  if(def == NULL)
+  {
+    // TODO: SEAN probably not right
+    return true;
+  }
+
+  // Save the found definition in the AST, so we don't need to look it up again.
+  ast_setdata(ast, (void*)def);
+
+  switch(ast_id(def))
+  {
+    case TK_INTERFACE:
+    case TK_TRAIT:
+    case TK_TYPE:
+    case TK_TYPEPARAM:
+    case TK_PRIMITIVE:
+    case TK_STRUCT:
+    case TK_CLASS:
+    case TK_ACTOR:
+    {
+      ast_setid(ast, TK_TYPEREF);
+
+      ast_add(ast, ast_from(ast, TK_NONE));    // 1st child: package reference
+      ast_append(ast, ast_from(ast, TK_NONE)); // 3rd child: type args
+
+      return true;
+    }
+
+    default: {}
+  }
+
+  return true;
+}
+
+ast_result_t pass_names_pre(ast_t** astp, pass_opt_t* options)
 {
   (void)options;
 
@@ -373,6 +420,22 @@ ast_result_t pass_names(ast_t** astp, pass_opt_t* options)
   {
     case TK_NOMINAL:
       if(!names_nominal(options, *astp, astp, false))
+        return AST_FATAL;
+      break;
+
+    default: {}
+  }
+
+  return AST_OK;
+}
+ast_result_t pass_names(ast_t** astp, pass_opt_t* options)
+{
+  (void)options;
+
+  switch(ast_id(*astp))
+  {
+    case TK_REFERENCE:
+      if(!names_reference(astp))
         return AST_FATAL;
       break;
 
