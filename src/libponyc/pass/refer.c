@@ -472,23 +472,6 @@ bool refer_reference(pass_opt_t* opt, ast_t** astp)
       return true;
     }
 
-    case TK_INTERFACE:
-    case TK_TRAIT:
-    case TK_TYPE:
-    case TK_TYPEPARAM:
-    case TK_PRIMITIVE:
-    case TK_STRUCT:
-    case TK_CLASS:
-    case TK_ACTOR:
-    {
-      ast_setid(ast, TK_TYPEREF);
-
-      ast_add(ast, ast_from(ast, TK_NONE));    // 1st child: package reference
-      ast_append(ast, ast_from(ast, TK_NONE)); // 3rd child: type args
-
-      return true;
-    }
-
     case TK_FVAR:
     case TK_FLET:
     case TK_EMBED:
