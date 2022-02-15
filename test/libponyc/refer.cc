@@ -900,3 +900,37 @@ TEST_F(ReferTest, MemberAccessWithConsumeLhs)
 
   TEST_COMPILE(src);
 }
+
+TEST_F(ReferTest, TryElseNoFieldInitializationInBody)
+{
+  const char* src =
+    "actor Main\n"
+    "  var _s: (String | None)\n"
+    "  new create(env: Env) =>\n"
+    "    try\n"
+    "      \"\".usize()?.string()\n"
+    "    else\n"
+    "      _s = None\n"
+    "    end";
+
+  TEST_ERRORS_2(src,
+    "field left undefined in constructor",
+    "constructor with undefined fields is here");
+}
+
+TEST_F(ReferTest, TryElseNoFieldInitializationInElse)
+{
+  const char* src =
+    "actor Main\n"
+    "  var _s: (String | None)\n"
+    "  new create(env: Env) =>\n"
+    "    try\n"
+    "      _s = \"\".usize()?.string()\n"
+    "    else\n"
+    "      let s: String = \"hello\"\n"
+    "    end";
+
+  TEST_ERRORS_2(src,
+    "field left undefined in constructor",
+    "constructor with undefined fields is here");
+}
