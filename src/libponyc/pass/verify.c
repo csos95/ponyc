@@ -1,6 +1,7 @@
 #include "verify.h"
 #include "../type/assemble.h"
 #include "../type/cap.h"
+#include "../type/compattype.h"
 #include "../type/lookup.h"
 #include "../verify/call.h"
 #include "../verify/control.h"
@@ -518,7 +519,6 @@ static bool verify_assign(pass_opt_t* opt, ast_t* ast)
   return true;
 }
 
-
 ast_result_t pass_verify(ast_t** astp, pass_opt_t* options)
 {
   ast_t* ast = *astp;
@@ -541,6 +541,8 @@ ast_result_t pass_verify(ast_t** astp, pass_opt_t* options)
     case TK_FFICALL:      r = verify_ffi_call(options, ast); break;
     case TK_TRY:
     case TK_TRY_NO_CHECK: r = verify_try(options, ast); break;
+    case TK_DISPOSING_BLOCK:
+                          r = verify_disposing_block(ast); break;
     case TK_ERROR:        ast_seterror(ast); break;
 
     default:              ast_inheritflags(ast); break;

@@ -3,16 +3,13 @@ use "collections"
 use "files"
 use "time"
 
-
-type ProcessMonitorAuth is (AmbientAuth | StartProcessAuth)
-
 actor ProcessMonitor is AsioEventNotify
   """
   Fork+execs / creates a child process and monitors it. Notifies a client about
   STDOUT / STDERR events.
   """
   let _notifier: ProcessNotify
-  let _backpressure_auth: BackpressureAuth
+  let _backpressure_auth: ApplyReleaseBackpressureAuth
 
   var _stdin: _Pipe = _Pipe.none()
   var _stdout: _Pipe = _Pipe.none()
@@ -36,8 +33,8 @@ actor ProcessMonitor is AsioEventNotify
   var _final_wait_result: (_WaitResult | None) = None
 
   new create(
-    auth: ProcessMonitorAuth,
-    backpressure_auth: BackpressureAuth,
+    auth: StartProcessAuth,
+    backpressure_auth: ApplyReleaseBackpressureAuth,
     notifier: ProcessNotify iso,
     filepath: FilePath,
     args: Array[String] val,
@@ -199,9 +196,18 @@ actor ProcessMonitor is AsioEventNotify
     """
     Terminate child and close down everything.
     """
-    Backpressure.release(_backpressure_auth)
-    _child.kill()
-    _close()
+    match _child
+    | let never_started: _ProcessNone =>
+      // We never started a child process so do not do any disposal
+      // If we do, some weirdness can happen with dispose getting called
+      // on the notifier which is not supposed to happen if we never started
+      // a child (or haven't started one yet).
+      return
+    else
+      Backpressure.release(_backpressure_auth)
+      _child.kill()
+      _close()
+    end
 
   fun ref expect(qty: USize = 0) =>
     """

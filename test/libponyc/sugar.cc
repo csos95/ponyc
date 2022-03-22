@@ -553,7 +553,7 @@ TEST_F(SugarTest, FunctionNoReturnBody)
 }
 
 
-TEST_F(SugarTest, FunctionParamMustBeId)
+TEST_F(SugarTest, MethodParamMustBeId)
 {
   const char* good1 =
     "trait Foo\n"
@@ -561,11 +561,17 @@ TEST_F(SugarTest, FunctionParamMustBeId)
 
   TEST_COMPILE(good1);
 
-  const char* good2 =
+  const char* good1_be =
     "trait Foo\n"
-    "  fun foo(_: U64) => 3";
+    "  be foo(x: U64) => 3";
 
-  TEST_COMPILE(good2);
+  TEST_COMPILE(good1_be);
+
+  const char* good1_new =
+    "class Foo\n"
+    "  new create(x: U64) => 3";
+
+  TEST_COMPILE(good1_new);
 
   const char* bad1 =
     "trait Foo\n"
@@ -573,11 +579,89 @@ TEST_F(SugarTest, FunctionParamMustBeId)
 
   TEST_ERROR(bad1);
 
+  const char* bad1_be =
+    "trait Foo\n"
+    "  be foo(x.y(): U64) => 3";
+
+  TEST_ERROR(bad1_be);
+
+  const char* bad1_new =
+    "class Foo\n"
+    "  new create(x.y(): U64) => 3";
+
+  TEST_ERROR(bad1_new);
+
   const char* bad2 =
     "trait Foo\n"
     "  fun foo($: U64) => 3";
 
   TEST_ERROR(bad2);
+
+  const char* bad2_be =
+    "trait Foo\n"
+    "  be foo($: U64) => 3";
+
+  TEST_ERROR(bad2_be);
+
+  const char* bad2_new =
+    "class Foo\n"
+    "  new create($: U64) => 3";
+
+  TEST_ERROR(bad2_new);
+
+  const char* bad3 =
+    "trait Foo\n"
+    "  fun foo(__: U64) => 3";
+
+  TEST_ERROR(bad3);
+
+  const char* bad3_be =
+    "trait Foo\n"
+    "  be foo(__: U64) => 3";
+
+  TEST_ERROR(bad3_be);
+
+  const char* bad3_new =
+    "class Foo\n"
+    "  new create(__: U64) => 3";
+
+  TEST_ERROR(bad3_new);
+
+  const char* bad4 =
+    "trait Foo\n"
+    "  fun foo(_x: U64) => 3";
+
+  TEST_ERROR(bad4);
+
+  const char* bad4_be =
+    "trait Foo\n"
+    "  be foo(_x: U64) => 3";
+
+  TEST_ERROR(bad4_be);
+
+  const char* bad4_new =
+    "class Foo\n"
+    "  new create(_x: U64) => 3";
+
+  TEST_ERROR(bad4_new);
+
+  const char* bad5 =
+    "trait Foo\n"
+    "  fun foo(_x: U64) => 3";
+
+  TEST_ERROR(bad5);
+
+  const char* bad5_be =
+    "trait Foo\n"
+    "  be foo(_x: U64) => 3";
+
+  TEST_ERROR(bad5_be);
+
+  const char* bad5_new =
+    "class Foo\n"
+    "  new create(_x: U64) => 3";
+
+  TEST_ERROR(bad5_new);
 }
 
 
@@ -1933,141 +2017,3 @@ TEST_F(SugarTest, AsOperatorWithLambdaType)
 
   TEST_COMPILE(short_form);
 }
-
-TEST_F(SugarTest, WithExpr)
-{
-  const char* short_form =
-    "class Disposable\n"
-    "  var create: U32\n"
-    "  fun dispose(): None =>\n"
-    "    None"
-    "\n"
-    "class Foo\n"
-    "  var create: U32\n"
-    "  fun do_it() =>\n"
-    "    with a = Disposable, b = Disposable do\n"
-    "      error\n"
-    "    end\n";
-  const char* full_form =
-    "use \"builtin\"\n"
-    "class ref Disposable\n"
-    "  var create: U32\n"
-    "  \n"
-    "  fun box dispose(): None =>\n"
-    "    None\n"
-    "    None\n"
-    "\n"
-    "class ref Foo\n"
-    "  var create: U32\n"
-    "  fun box do_it(): None =>\n"
-    "    (\n"
-    "    let $1 = (Disposable)\n"
-    "    let $0 = (Disposable)\n"
-    "    $try_no_check\n"
-    "      let b = $1\n"
-    "      let a = $0\n"
-    "      (error)\n"
-    "    else\n"
-    "      let b = $1\n"
-    "      let a = $0\n"
-    "      (None)\n"
-    "    then\n"
-    "      let b = $1\n"
-    "      b.dispose()\n"
-    "      let a = $0\n"
-    "      a.dispose()\n"
-    "    end)\n"
-    "    None";
-  TEST_EQUIV(short_form, full_form);
-}
-
-TEST_F(SugarTest, WithExprWithTupleDestructuring)
-{
-  const char* short_form =
-    "class Disposable\n"
-    "  var create: U32\n"
-    "  fun dispose(): None =>\n"
-    "    None"
-    "\n"
-    "class Foo\n"
-    "  var create: U32\n"
-    "  fun do_it() =>\n"
-    "    with (a, b) = (Disposable, Disposable) do\n"
-    "      error\n"
-    "    end\n";
-  const char* full_form =
-    "use \"builtin\"\n"
-    "class ref Disposable\n"
-    "  var create: U32\n"
-    "  \n"
-    "  fun box dispose(): None =>\n"
-    "    None\n"
-    "    None\n"
-    "\n"
-    "class ref Foo\n"
-    "  var create: U32\n"
-    "  fun box do_it(): None =>\n"
-    "    (\n"
-    "    let $0 = (\n"
-    "      (Disposable, Disposable)\n"
-    "    )\n"
-    "    $try_no_check\n"
-    "      (let a, let b) = $0\n"
-    "      (error)\n"
-    "    else\n"
-    "      (let a, let b) = $0\n"
-    "      (None)\n"
-    "    then\n"
-    "      (let a, let b) = $0\n"
-    "      b.dispose()\n"
-    "      a.dispose()\n"
-    "    end)\n"
-    "    None";
-  TEST_EQUIV(short_form, full_form);
-}
-
-TEST_F(SugarTest, WithExprWithTupleDestructuringAndDontCare)
-{
-  const char* short_form =
-    "class Disposable\n"
-    "  var create: U32\n"
-    "  fun dispose(): None =>\n"
-    "    None"
-    "\n"
-    "class Foo\n"
-    "  var create: U32\n"
-    "  fun do_it() =>\n"
-    "    with (a, _, c) = (Disposable, Disposable, Disposable) do\n"
-    "      error\n"
-    "    end\n";
-  const char* full_form =
-    "use \"builtin\"\n"
-    "class ref Disposable\n"
-    "  var create: U32\n"
-    "  \n"
-    "  fun box dispose(): None =>\n"
-    "    None\n"
-    "    None\n"
-    "\n"
-    "class ref Foo\n"
-    "  var create: U32\n"
-    "  fun box do_it(): None =>\n"
-    "    (\n"
-    "    let $0 = (\n"
-    "      (Disposable, Disposable, Disposable)\n"
-    "    )\n"
-    "    $try_no_check\n"
-    "      (let a, let _, let c) = $0\n"
-    "      (error)\n"
-    "    else\n"
-    "      (let a, let _, let c) = $0\n"
-    "      (None)\n"
-    "    then\n"
-    "      (let a, let _, let c) = $0\n"
-    "      c.dispose()\n"
-    "      a.dispose()\n"
-    "    end)\n"
-    "    None";
-  TEST_EQUIV(short_form, full_form);
-}
-

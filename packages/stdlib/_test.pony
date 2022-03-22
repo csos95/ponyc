@@ -13,7 +13,7 @@ All tests can be run by compiling and running packages/stdlib.
 // Include ALL standard library packages here, even if they don't have tests.
 // That way stdlib can be used to type check the whole standard library,
 // generate docs for it, etc.
-use "ponytest"
+use "pony_test"
 use assert = "assert"
 use backpressure= "backpressure"
 use base64 = "encode/base64"
@@ -30,10 +30,10 @@ use format = "format"
 use ini = "ini"
 use itertools = "itertools"
 use json = "json"
-use logger = "logger"
 use math = "math"
 use net = "net"
-use ponybench = "ponybench"
+use pony_bench = "pony_bench"
+use pony_check = "pony_check"
 use process = "process"
 use promises = "promises"
 use random = "random"
@@ -62,9 +62,9 @@ actor \nodoc\ Main is TestList
     ini.Main.make().tests(test)
     itertools.Main.make().tests(test)
     json.Main.make().tests(test)
-    logger.Main.make().tests(test)
     math.Main.make().tests(test)
     net.Main.make().tests(test)
+    pony_check.Main.make().tests(test)
     process.Main.make().tests(test)
     promises.Main.make().tests(test)
     random.Main.make().tests(test)

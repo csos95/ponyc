@@ -435,9 +435,10 @@ bool refer_reference(pass_opt_t* opt, ast_t** astp)
     return true;
   }
 
-  // Everything we reference must be in scope, so we can use ast_get for lookup.
   sym_status_t status;
-  ast_t* def = ast_get(ast, ast_name(ast_child(ast)), &status);
+  ast_t* def = ast_get(ast, name, &status);
+  if(def == NULL)
+    def = ast_get_provided_symbol_definition(ast, name, &status);
 
   // If nothing was found, we fail, but also try to suggest an alternate name.
   if(def == NULL)
@@ -1331,6 +1332,19 @@ static bool refer_seq(pass_opt_t* opt, ast_t* ast)
       }
       break;
 
+      case TK_DISPOSING_BLOCK:
+      {
+        AST_GET_CHILDREN(parent, body, dispose_clause);
+
+        if(body == ast)
+        {
+          // Push our consumes, but not defines, to the dispose clause.
+          ast_inheritbranch(dispose_clause, body);
+          ast_consolidate_branches(dispose_clause, 2);
+        }
+      }
+      break;
+
       case TK_REPEAT:
       {
         AST_GET_CHILDREN(parent, body, cond, else_clause);
@@ -1664,6 +1678,31 @@ static bool refer_try(pass_opt_t* opt, ast_t* ast)
   return true;
 }
 
+static bool refer_disposing_block(ast_t* ast)
+{
+  pony_assert(ast_id(ast) == TK_DISPOSING_BLOCK);
+  AST_GET_CHILDREN(ast, body, dispose_clause);
+
+  size_t branch_count = 0;
+
+  if(!ast_checkflag(body, AST_FLAG_JUMPS_AWAY))
+  {
+    branch_count++;
+    ast_inheritbranch(dispose_clause, body);
+  }
+
+  ast_consolidate_branches(dispose_clause, branch_count);
+
+  // If body branch jumps away with no value, then we do too.
+  if(branch_count == 0)
+    ast_setflag(ast, AST_FLAG_JUMPS_AWAY);
+
+  // Push the symbol status from the dispose clause to our parent scope.
+  ast_inheritstatus(ast_parent(ast), dispose_clause);
+
+  return true;
+}
+
 static bool refer_recover(pass_opt_t* opt, ast_t* ast)
 {
   (void)opt;
@@ -1820,6 +1859,8 @@ ast_result_t pass_refer(ast_t** astp, pass_opt_t* options)
     case TK_CASES:     r = refer_cases(options, ast); break;
     case TK_TRY_NO_CHECK:
     case TK_TRY:       r = refer_try(options, ast); break;
+    case TK_DISPOSING_BLOCK:
+                       r = refer_disposing_block(ast); break;
     case TK_RECOVER:   r = refer_recover(options, ast); break;
     case TK_BREAK:     r = refer_break(options, ast); break;
     case TK_CONTINUE:  r = refer_continue(options, ast); break;

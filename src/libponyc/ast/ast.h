@@ -106,7 +106,7 @@ bool ast_has_annotation(ast_t* ast, const char* name);
 void ast_erase(ast_t* ast);
 
 ast_t* ast_nearest(ast_t* ast, token_id id);
-ast_t* ast_try_clause(ast_t* ast, size_t* clause);
+ast_t* ast_error_handling_clause(ast_t* ast, size_t* clause);
 
 ast_t* ast_parent(ast_t* ast);
 ast_t* ast_child(ast_t* ast);
@@ -212,6 +212,9 @@ void ast_extract_children(ast_t* parent, size_t child_count,
     ast_extract_children(parent, (sizeof(children)/sizeof(ast_t**)) - 1, \
       children); \
   }
+
+ast_t* ast_get_provided_symbol_definition(ast_t* ast,
+  const char* name, sym_status_t* status);
 
 pony_type_t* ast_signature_pony_type();
 

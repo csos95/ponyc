@@ -943,7 +943,7 @@ ast_t* ast_nearest(ast_t* ast, token_id id)
   return ast;
 }
 
-ast_t* ast_try_clause(ast_t* ast, size_t* clause)
+ast_t* ast_error_handling_clause(ast_t* ast, size_t* clause)
 {
   ast_t* last = NULL;
 
@@ -953,6 +953,7 @@ ast_t* ast_try_clause(ast_t* ast, size_t* clause)
     {
       case TK_TRY:
       case TK_TRY_NO_CHECK:
+      case TK_DISPOSING_BLOCK:
       {
         *clause = ast_index(last);
         return ast;
@@ -1890,6 +1891,33 @@ void ast_extract_children(ast_t* parent, size_t child_count,
 
     p = next;
   }
+}
+
+ast_t* ast_get_provided_symbol_definition(ast_t* ast,
+  const char* name, sym_status_t* status)
+{
+  // The definition isn't in the local scope. let's check to see if our
+  // parent has a provided method body from a trait or interface. If yes,
+  // then we will find our definition.
+  ast_t* def = NULL;
+  bool found = false;
+
+  while(ast != NULL && !found)
+  {
+    if((ast_id(ast) == TK_FUN) || (ast_id(ast) == TK_BE))
+    {
+      // Methods with defaults provided by a trait/interface store the ast
+      // of the provided body in the ast data.
+      ast_t* body_donor = (ast_t *)ast_data(ast);
+      if (body_donor != NULL)
+        def = ast_get(body_donor, name, status);
+      found = true;
+    }
+
+    ast = ast_parent(ast);
+  }
+
+  return def;
 }
 
 static void ast_signature_serialise_trace(pony_ctx_t* ctx, void* object)

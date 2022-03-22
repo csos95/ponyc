@@ -6,18 +6,50 @@ All notable changes to the Pony compiler and standard library will be documented
 
 ### Fixed
 
+- Fix crash with exhaustive match and generics ([PR #4057](https://github.com/ponylang/ponyc/pull/4057))
+- Fix parameter names not being checked ([PR #4061](https://github.com/ponylang/ponyc/pull/4061))
+
+### Added
+
+
+### Changed
+
+
+## [0.49.1] - 2022-03-13
+
+### Fixed
+
+- Ban unstable variables ([PR #4018](https://github.com/ponylang/ponyc/pull/4018))
+
+## [0.49.0] - 2022-02-26
+
+### Fixed
+
 - Add workaround for compiler assertion failure in Promise.flatten_next ([PR #3991](https://github.com/ponylang/ponyc/pull/3991))
 - Take exhaustive match into account when checking for field initialization ([PR #4006](https://github.com/ponylang/ponyc/pull/4006))
 - Fix compiler crash related to using tuples as a generic constraint ([PR #4005](https://github.com/ponylang/ponyc/pull/4005))
 - Fix incorrect "field not initialized" error with while/else ([PR #4009](https://github.com/ponylang/ponyc/pull/4009))
 - Fix incorrect "field not initialized" error with try/else ([PR #4011](https://github.com/ponylang/ponyc/pull/4011))
+- Fix compiler crash related to using tuples in a union as a generic constraint ([PR #4017](https://github.com/ponylang/ponyc/pull/4017))
+- Fix incorrect code returned by ANSI.erase ([PR #4022](https://github.com/ponylang/ponyc/pull/4022))
+- Fix the signature of Iter's map_stateful/map to not require ephemerals ([PR #4026](https://github.com/ponylang/ponyc/pull/4026))
+- Use symbol table from definition scope when looking up references from default method bodies ([PR #4027](https://github.com/ponylang/ponyc/pull/4027))
+- Fix LLVM IR verification error found via PonyCheck ([PR #4039](https://github.com/ponylang/ponyc/pull/4039))
+- Fix failed initialization bug in Process Monitor ([PR #4043](https://github.com/ponylang/ponyc/pull/4043))
 
 ### Added
 
 - Add LeastCommonMultiple and GreatestCommonDivisor to math package ([PR #4001](https://github.com/ponylang/ponyc/pull/4001))
+- Add PonyCheck to standard library ([PR #4034](https://github.com/ponylang/ponyc/pull/4034))
 
 ### Changed
 
+- Reimplement `with` ([PR #4024](https://github.com/ponylang/ponyc/pull/4024))
+- Remove `logger` package from the standard library ([PR #4035](https://github.com/ponylang/ponyc/pull/4035))
+- Rename `ponybench` to match standard naming conventions. ([PR #4033](https://github.com/ponylang/ponyc/pull/4033))
+- Change the standard library pattern for object capabilities ([PR #4031](https://github.com/ponylang/ponyc/pull/4031))
+- Update Windows version used as the base for Windows images ([PR #4044](https://github.com/ponylang/ponyc/pull/4044))
+- Rename `ponytest` package to conform to naming standards ([PR #4032](https://github.com/ponylang/ponyc/pull/4032))
 
 ## [0.48.0] - 2022-02-08
 
